@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UNITED '26 · World Cup Pick'Em</title>
+<meta name="description" content="Predict every match of the 2026 FIFA World Cup. Order the groups, rank the third-place teams, fill the bracket, and share your picks." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Archivo:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2e3c4;          /* aged cream paper */
+  --paper-2:#ecd9b0;
+  --ink:#221a12;            /* near-black ink */
+  --brick:#c63d20;          /* brick red */
+  --brick-deep:#9c2c14;
+  --ochre:#e2a02b;          /* mustard / ochre */
+  --teal:#1f7a6d;           /* vintage teal */
+  --teal-deep:#11564c;
+  --navy:#243a5e;
+  --cream-line:rgba(34,26,18,.16);
+  --shadow:6px 6px 0 var(--ink);
+  --shadow-sm:3px 3px 0 var(--ink);
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  position:relative;
+}
+/* paper grain + halftone atmosphere */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.05;
+  background-image:radial-gradient(var(--ink) 1px, transparent 1.4px);
+  background-size:14px 14px;
+}
+.wrap{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+h1,h2,h3,.display{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;text-transform:uppercase;line-height:.92;margin:0}
+.bebas{font-family:'Bebas Neue',sans-serif}
+.mono{font-family:'Space Mono',monospace}
+
+a{color:var(--brick-deep)}
+
+/* ====== STICKY STEPPER NAV ====== */
+.stepper{
+  position:sticky;top:0;z-index:50;background:var(--ink);color:var(--paper);
+  border-bottom:4px solid var(--brick);
+}
+.stepper .inner{max-width:var(--maxw);margin:0 auto;display:flex;align-items:stretch;gap:0;overflow-x:auto}
+.step{
+  appearance:none;border:0;background:transparent;color:var(--paper);
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(15px,2.2vw,20px);letter-spacing:.06em;
+  padding:14px 18px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:9px;
+  border-right:1px solid rgba(242,227,196,.16);transition:background .15s,color .15s;position:relative;
+}
+.step .num{
+  font-family:'Space Mono',monospace;font-size:11px;background:var(--ochre);color:var(--ink);
+  width:21px;height:21px;display:grid;place-items:center;border-radius:50%;font-weight:700;
+}
+.step.done .num{background:var(--teal);color:var(--paper)}
+.step:hover{background:rgba(242,227,196,.08)}
+.step.active{background:var(--brick);color:#fff}
+.step.active .num{background:#fff;color:var(--brick)}
+.step.locked{opacity:.4;cursor:not-allowed}
+
+/* ====== SECTIONS ====== */
+section{display:none;padding:42px 0 90px;animation:fade .4s ease both}
+section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.kicker{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--brick-deep);font-weight:700}
+.sec-head{margin:8px 0 26px;border-bottom:3px solid var(--ink);padding-bottom:18px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+.sec-head h2{font-size:clamp(34px,7vw,72px);color:var(--ink)}
+.sec-head .right{font-family:'Space Mono',monospace;font-size:13px;text-align:right;max-width:340px;line-height:1.5}
+
+.btn{
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.06em;
+  background:var(--brick);color:#fff;border:3px solid var(--ink);padding:12px 26px;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform .08s,box-shadow .08s;text-transform:uppercase;
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.ghost{background:var(--paper);color:var(--ink)}
+.btn.teal{background:var(--teal)}
+.btn.ochre{background:var(--ochre);color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+.btnrow{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px}
+
+/* ====== HERO ====== */
+#hero{padding:0}
+#hero.active{display:block}
+.hero-stage{position:relative;padding:70px 0 60px;overflow:hidden}
+.hero-rays{position:absolute;inset:-20% -20% auto -20%;height:140%;z-index:0;
+  background:repeating-conic-gradient(from 0deg at 50% 0%, var(--ochre) 0deg 9deg, transparent 9deg 18deg);
+  opacity:.18;transform:translateY(-10%);}
+.hero-inner{position:relative;z-index:2;text-align:center}
+.hero-tag{display:inline-block;background:var(--ink);color:var(--paper);font-family:'Space Mono',monospace;
+  font-size:12px;letter-spacing:.3em;padding:8px 16px;text-transform:uppercase;transform:rotate(-1.5deg)}
+.hero-title{font-size:clamp(58px,16vw,180px);color:var(--brick);margin:12px 0 0;
+  text-shadow:var(--shadow);-webkit-text-stroke:2px var(--ink);line-height:.82;}
+.hero-title .yr{color:var(--teal);display:block}
+.hero-sub{font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,3.4vw,34px);letter-spacing:.08em;margin-top:18px}
+.hero-meta{font-family:'Space Mono',monospace;font-size:13px;margin-top:14px;opacity:.8;letter-spacing:.06em}
+.hero-ball{display:inline-block;width:46px;height:46px;border-radius:50%;background:
+  radial-gradient(circle at 35% 30%, #fff 0 30%, transparent 31%),var(--ink);
+  border:3px solid var(--ink);vertical-align:middle;margin:0 10px;position:relative;top:-4px}
+.hero-flags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:760px;margin:30px auto 0}
+.hero-flags span{font-size:22px;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.2))}
+.poster-strip{display:flex;gap:0;margin-top:46px;border:4px solid var(--ink);box-shadow:var(--shadow)}
+.poster-strip div{flex:1;padding:16px 8px;text-align:center;font-family:'Anton',sans-serif;font-size:clamp(13px,2vw,18px);color:#fff;text-transform:uppercase}
+.poster-strip div:nth-child(1){background:var(--brick)}
+.poster-strip div:nth-child(2){background:var(--teal)}
+.poster-strip div:nth-child(3){background:var(--ochre);color:var(--ink)}
+.poster-strip div:nth-child(4){background:var(--navy)}
+
+/* ====== GROUP STAGE ====== */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px}
+.gcard{background:var(--paper-2);border:3px solid var(--ink);box-shadow:var(--shadow-sm);position:relative}
+.gcard .ghead{display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:var(--paper);padding:9px 14px}
+.gcard .ghead .gname{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.04em}
+.gcard .ghead .gtag{font-family:'Space Mono',monospace;font-size:11px;opacity:.8}
+.glist{list-style:none;margin:0;padding:8px}
+.team{
+  display:flex;align-items:center;gap:11px;background:var(--paper);border:2px solid var(--ink);
+  padding:9px 11px;margin:7px 0;cursor:grab;touch-action:none;user-select:none;
+  box-shadow:2px 2px 0 rgba(34,26,18,.5);transition:box-shadow .1s,transform .1s,background .1s;
+}
+.team:active{cursor:grabbing}
+.team.dragging{opacity:.55;box-shadow:none}
+.team .rank{font-family:'Anton',sans-serif;font-size:18px;width:26px;height:26px;display:grid;place-items:center;
+  background:var(--ochre);color:var(--ink);border:2px solid var(--ink);flex:none}
+.team .flag{font-size:22px;flex:none;line-height:1}
+.team .tname{font-weight:700;font-size:15px;line-height:1.05}
+.team .grip{margin-left:auto;color:var(--ink);opacity:.4;font-family:'Space Mono',monospace;font-size:16px;flex:none}
+.team[data-pos="1"] .rank{background:var(--teal);color:#fff}
+.team[data-pos="2"] .rank{background:var(--ochre)}
+.team[data-pos="3"] .rank{background:var(--paper-2)}
+.team[data-pos="4"] .rank{background:var(--paper-2);opacity:.7}
+.qual-line{height:3px;background:repeating-linear-gradient(90deg,var(--brick) 0 10px,transparent 10px 18px);margin:2px 4px;position:relative}
+.qual-line::after{content:"ADVANCE ▲";position:absolute;right:6px;top:-9px;font-family:'Space Mono',monospace;font-size:9px;color:var(--brick-deep);background:var(--paper-2);padding:0 4px;font-weight:700}
+
+/* ====== THIRD PLACE ====== */
+.third-wrap{display:grid;grid-template-columns:1fr;gap:8px;max-width:680px}
+.third-item{
+  display:flex;align-items:center;gap:13px;background:var(--paper-2);border:3px solid var(--ink);
+  padding:12px 16px;cursor:grab;touch-action:none;user-select:none;box-shadow:var(--shadow-sm);
+  transition:transform .1s,box-shadow .1s,background .12s;position:relative;
+}
+.third-item.dragging{opacity:.5}
+.third-item .seed{font-family:'Anton',sans-serif;font-size:24px;width:40px;text-align:center;flex:none}
+.third-item .flag{font-size:28px;flex:none}
+.third-item .tname{font-weight:700;font-size:17px}
+.third-item .grp{font-family:'Space Mono',monospace;font-size:12px;opacity:.65;margin-left:auto;flex:none}
+.third-item.advancing{background:#cdeee0;border-color:var(--teal-deep)}
+.third-item.advancing .seed{color:var(--teal-deep)}
+.third-cutline{display:flex;align-items:center;gap:12px;margin:6px 0;color:var(--brick-deep);font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.1em}
+.third-cutline::before,.third-cutline::after{content:"";flex:1;height:3px;background:repeating-linear-gradient(90deg,var(--brick) 0 9px,transparent 9px 16px)}
+
+/* ====== BRACKET ====== */
+.bracket-scroll{overflow-x:auto;padding:10px 4px 30px;-webkit-overflow-scrolling:touch}
+.bracket{display:flex;gap:30px;min-width:max-content;align-items:stretch}
+.round{display:flex;flex-direction:column;justify-content:space-around;gap:14px;min-width:210px}
+.round-label{font-family:'Anton',sans-serif;font-size:15px;text-align:center;color:var(--paper);background:var(--ink);
+  padding:5px;margin-bottom:6px;position:sticky;top:0;letter-spacing:.06em}
+.round.r-final .round-label{background:var(--brick)}
+.match{background:var(--paper-2);border:3px solid var(--ink);box-shadow:var(--shadow-sm);position:relative}
+.match .mno{position:absolute;top:-9px;left:8px;font-family:'Space Mono',monospace;font-size:9px;background:var(--ink);color:var(--paper);padding:1px 5px}
+.slot{display:flex;align-items:center;gap:9px;padding:9px 11px;cursor:pointer;border-bottom:2px dashed var(--cream-line);transition:background .12s}
+.slot:last-child{border-bottom:0}
+.slot:hover{background:var(--paper)}
+.slot .flag{font-size:19px;flex:none;width:22px;text-align:center}
+.slot .nm{font-weight:700;font-size:14px;line-height:1.05;flex:1;min-width:0}
+.slot .seedtag{font-family:'Space Mono',monospace;font-size:10px;opacity:.6;flex:none}
+.slot.empty{color:rgba(34,26,18,.4);font-style:italic;cursor:default}
+.slot.empty:hover{background:transparent}
+.slot.winner{background:var(--teal);color:#fff;}
+.slot.winner .seedtag{opacity:.85;color:#fff}
+.slot.winner:hover{background:var(--teal-deep)}
+.slot.loser{opacity:.42;text-decoration:line-through}
+.champ-card{align-self:center;margin-top:10px;text-align:center;padding:18px 22px;border:4px solid var(--ink);background:var(--ochre);box-shadow:var(--shadow);transform:rotate(-1.5deg)}
+.champ-card .ct{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.3em}
+.champ-card .cn{font-family:'Anton',sans-serif;font-size:clamp(26px,4vw,42px);line-height:.9;margin-top:4px}
+.champ-card .cf{font-size:40px;margin-top:6px}
+.stamp-in{animation:stamp .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stamp{0%{transform:scale(2.4) rotate(8deg);opacity:0}60%{opacity:1}100%{transform:rotate(-1.5deg);opacity:1}}
+
+.bracket-hint{font-family:'Space Mono',monospace;font-size:12px;background:var(--paper-2);border:2px dashed var(--ink);padding:10px 14px;margin-bottom:18px;display:inline-block}
+
+/* progress chip */
+.progress{font-family:'Space Mono',monospace;font-size:12px;background:var(--ink);color:var(--paper);padding:6px 12px;display:inline-flex;align-items:center;gap:8px}
+.progress b{color:var(--ochre)}
+
+/* ====== SHARE ====== */
+.share-card{background:var(--ink);color:var(--paper);border:4px solid var(--brick);box-shadow:var(--shadow);padding:30px;max-width:760px}
+.share-card h2{color:var(--paper);font-size:clamp(28px,5vw,48px)}
+.linkbox{display:flex;gap:0;margin-top:18px;flex-wrap:wrap}
+.linkbox input{flex:1;min-width:240px;font-family:'Space Mono',monospace;font-size:12px;padding:13px;border:3px solid var(--paper);background:var(--paper);color:var(--ink);outline:none}
+.copybtn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.06em;background:var(--ochre);color:var(--ink);border:3px solid var(--paper);border-left:0;padding:0 22px;cursor:pointer}
+.copybtn:hover{background:#fff}
+.recap{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.recap .rc{background:var(--paper);color:var(--ink);border:2px solid var(--brick);padding:10px}
+.recap .rc .l{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;opacity:.7}
+.recap .rc .v{font-family:'Anton',sans-serif;font-size:18px;margin-top:3px;display:flex;align-items:center;gap:6px}
+
+/* view-mode banner */
+.viewbanner{background:var(--teal);color:#fff;border:3px solid var(--ink);box-shadow:var(--shadow-sm);
+  padding:14px 18px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.viewbanner .vt{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(40px);z-index:200;
+  background:var(--ink);color:var(--paper);border:3px solid var(--ochre);padding:13px 22px;
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;opacity:0;pointer-events:none;
+  transition:transform .3s,opacity .3s;box-shadow:var(--shadow-sm)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+footer{border-top:3px solid var(--ink);padding:26px 0;text-align:center;font-family:'Space Mono',monospace;font-size:11px;opacity:.7;position:relative;z-index:2}
+
+@media (max-width:560px){
+  .sec-head .right{display:none}
+  .poster-strip{flex-wrap:wrap}
+  .poster-strip div{flex:1 1 50%}
+}
+</style>
+</head>
+<body>
+
+<nav class="stepper" id="stepper">
+  <div class="inner" id="stepperInner"></div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section id="hero" class="active">
+    <div class="hero-stage">
+      <div class="hero-rays"></div>
+      <div class="hero-inner">
+        <span class="hero-tag">Canada · México · USA — June–July 2026</span>
+        <h1 class="hero-title">United<span class="yr">'26</span></h1>
+        <div class="hero-sub">The People's Pick'Em — 48 nations, one bracket, your call.</div>
+        <div class="hero-meta">FINAL · JULY 19 2026 · METLIFE STADIUM · EAST RUTHERFORD NJ</div>
+        <div class="hero-flags" id="heroFlags"></div>
+        <div class="btnrow" style="justify-content:center">
+          <button class="btn" onclick="go('groups')">Start Your Picks →</button>
+          <button class="btn ghost" onclick="go('bracket')" id="heroResume" style="display:none">Resume / View Picks</button>
+        </div>
+        <div class="poster-strip">
+          <div>Order the Groups</div>
+          <div>Rank the Thirds</div>
+          <div>Fill the Bracket</div>
+          <div>Share the Link</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GROUPS -->
+  <section id="groups">
+    <span class="kicker">Stage 01 — Group Stage</span>
+    <div class="sec-head">
+      <h2>Order the Groups</h2>
+      <div class="right">Drag each team into your predicted finishing order. <b>1st &amp; 2nd advance.</b> 3rd place may still sneak in as a best-third.</div>
+    </div>
+    <div id="groupProgress" style="margin-bottom:18px"></div>
+    <div class="groups-grid" id="groupsGrid"></div>
+    <div class="btnrow">
+      <button class="btn teal" onclick="go('thirds')">Next: Rank the Thirds →</button>
+    </div>
+  </section>
+
+  <!-- THIRDS -->
+  <section id="thirds">
+    <span class="kicker">Stage 02 — Best Third-Place</span>
+    <div class="sec-head">
+      <h2>Rank the Thirds</h2>
+      <div class="right">Twelve teams finished 3rd. Only the <b>top 8</b> advance. Drag to rank them — the cut line decides who's in.</div>
+    </div>
+    <div class="bracket-hint">FIFA's official Annex C table then slots these 8 against the correct group winners in the Round of 32.</div>
+    <div class="third-wrap" id="thirdWrap"></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="go('groups')">← Back to Groups</button>
+      <button class="btn teal" onclick="go('bracket')">Next: The Bracket →</button>
+    </div>
+  </section>
+
+  <!-- BRACKET -->
+  <section id="bracket">
+    <span class="kicker">Stage 03 — Knockouts</span>
+    <div class="sec-head">
+      <h2>Fill the Bracket</h2>
+      <div class="right">Tap a team in any matchup to advance them. Winners flow to the next round automatically — all the way to the Final.</div>
+    </div>
+    <div id="bracketProgress" style="margin-bottom:14px"></div>
+    <div class="bracket-hint" id="bracketWarn">Set all 12 group orders first so the bracket can populate.</div>
+    <div class="bracket-scroll"><div class="bracket" id="bracketEl"></div></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="go('thirds')">← Back to Thirds</button>
+      <button class="btn ochre" onclick="go('share')">Get My Link →</button>
+    </div>
+  </section>
+
+  <!-- SHARE -->
+  <section id="share">
+    <span class="kicker">Stage 04 — Lock It In</span>
+    <div class="sec-head">
+      <h2>Share Your Picks</h2>
+      <div class="right">Your entire bracket is baked into this link. Save it, send it, reopen it anytime — nothing is stored on a server.</div>
+    </div>
+    <div class="share-card">
+      <h2>Your Shareable Link</h2>
+      <div class="linkbox">
+        <input id="shareLink" readonly value="" />
+        <button class="copybtn" onclick="copyLink()">Copy</button>
+      </div>
+      <div class="recap" id="recap"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="go('bracket')">← Edit Bracket</button>
+      <button class="btn" onclick="newCard()">Start a Fresh Card</button>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  UNITED '26 PICK'EM · Unofficial fan project · Third-place allocation per FIFA Annex C ·
+  Built for <span class="mono">file://</span>, GitHub Pages &amp; Vercel.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script id="appjs">
+/* ============================================================
+   DATA
+   ============================================================ */
+const GROUPS = {
+  A:["Mexico","South Africa","South Korea","Czechia"],
+  B:["Canada","Bosnia and Herzegovina","Qatar","Switzerland"],
+  C:["Brazil","Morocco","Haiti","Scotland"],
+  D:["United States","Paraguay","Australia","Türkiye"],
+  E:["Germany","Curaçao","Côte d'Ivoire","Ecuador"],
+  F:["Netherlands","Japan","Sweden","Tunisia"],
+  G:["Belgium","Egypt","IR Iran","New Zealand"],
+  H:["Spain","Cabo Verde","Saudi Arabia","Uruguay"],
+  I:["France","Senegal","Iraq","Norway"],
+  J:["Argentina","Algeria","Austria","Jordan"],
+  K:["Portugal","Congo DR","Uzbekistan","Colombia"],
+  L:["England","Croatia","Ghana","Panama"]
+};
+const GROUP_LETTERS = Object.keys(GROUPS);
+
+const FLAG = {
+  "Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰🇷","Czechia":"🇨🇿",
+  "Canada":"🇨🇦","Bosnia and Herzegovina":"🇧🇦","Qatar":"🇶🇦","Switzerland":"🇨🇭",
+  "Brazil":"🇧🇷","Morocco":"🇲🇦","Haiti":"🇭🇹","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "United States":"🇺🇸","Paraguay":"🇵🇾","Australia":"🇦🇺","Türkiye":"🇹🇷",
+  "Germany":"🇩🇪","Curaçao":"🇨🇼","Côte d'Ivoire":"🇨🇮","Ecuador":"🇪🇨",
+  "Netherlands":"🇳🇱","Japan":"🇯🇵","Sweden":"🇸🇪","Tunisia":"🇹🇳",
+  "Belgium":"🇧🇪","Egypt":"🇪🇬","IR Iran":"🇮🇷","New Zealand":"🇳🇿",
+  "Spain":"🇪🇸","Cabo Verde":"🇨🇻","Saudi Arabia":"🇸🇦","Uruguay":"🇺🇾",
+  "France":"🇫🇷","Senegal":"🇸🇳","Iraq":"🇮🇶","Norway":"🇳🇴",
+  "Argentina":"🇦🇷","Algeria":"🇩🇿","Austria":"🇦🇹","Jordan":"🇯🇴",
+  "Portugal":"🇵🇹","Congo DR":"🇨🇩","Uzbekistan":"🇺🇿","Colombia":"🇨🇴",
+  "England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatia":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦"
+};
+
+/* Winner slots (in column order) that face a 3rd-place team, per FIFA Annex C */
+const THIRD_WINNER_ORDER = ["A","B","D","E","G","I","K","L"];
+
+/* THIRD_TABLE: key = sorted 8-letter combo of advancing 3rd groups,
+   value = 8-char string of assigned 3rd-place groups in THIRD_WINNER_ORDER. */
+const THIRD_TABLE = {"EFGHIJKL":"EJIFHGLK","DFGHIJKL":"HGIDJFLK","DEGHIJKL":"EJIDHGLK","DEFHIJKL":"EJIDHFLK","DEFGIJKL":"EGIDJFLK","DEFGHJKL":"EGJDHFLK","DEFGHIKL":"EGIDHFLK","DEFGHIJL":"EGJDHFLI","DEFGHIJK":"EGJDHFIK","CFGHIJKL":"HGICJFLK","CEGHIJKL":"EJICHGLK","CEFHIJKL":"EJICHFLK","CEFGIJKL":"EGICJFLK","CEFGHJKL":"EGJCHFLK","CEFGHIKL":"EGICHFLK","CEFGHIJL":"EGJCHFLI","CEFGHIJK":"EGJCHFIK","CDGHIJKL":"HGICJDLK","CDFHIJKL":"CJIDHFLK","CDFGIJKL":"CGIDJFLK","CDFGHJKL":"CGJDHFLK","CDFGHIKL":"CGIDHFLK","CDFGHIJL":"CGJDHFLI","CDFGHIJK":"CGJDHFIK","CDEHIJKL":"EJICHDLK","CDEGIJKL":"EGICJDLK","CDEGHJKL":"EGJCHDLK","CDEGHIKL":"EGICHDLK","CDEGHIJL":"EGJCHDLI","CDEGHIJK":"EGJCHDIK","CDEFIJKL":"CJEDIFLK","CDEFHJKL":"CJEDHFLK","CDEFHIKL":"CEIDHFLK","CDEFHIJL":"CJEDHFLI","CDEFHIJK":"CJEDHFIK","CDEFGJKL":"CGEDJFLK","CDEFGIKL":"CGEDIFLK","CDEFGIJL":"CGEDJFLI","CDEFGIJK":"CGEDJFIK","CDEFGHKL":"CGEDHFLK","CDEFGHJL":"CGJDHFLE","CDEFGHJK":"CGJDHFEK","CDEFGHIL":"CGEDHFLI","CDEFGHIK":"CGEDHFIK","CDEFGHIJ":"CGJDHFEI","BFGHIJKL":"HJBFIGLK","BEGHIJKL":"EJIBHGLK","BEFHIJKL":"EJBFIHLK","BEFGIJKL":"EJBFIGLK","BEFGHJKL":"EJBFHGLK","BEFGHIKL":"EGBFIHLK","BEFGHIJL":"EJBFHGLI","BEFGHIJK":"EJBFHGIK","BDGHIJKL":"HJBDIGLK","BDFHIJKL":"HJBDIFLK","BDFGIJKL":"IGBDJFLK","BDFGHJKL":"HGBDJFLK","BDFGHIKL":"HGBDIFLK","BDFGHIJL":"HGBDJFLI","BDFGHIJK":"HGBDJFIK","BDEHIJKL":"EJBDIHLK","BDEGIJKL":"EJBDIGLK","BDEGHJKL":"EJBDHGLK","BDEGHIKL":"EGBDIHLK","BDEGHIJL":"EJBDHGLI","BDEGHIJK":"EJBDHGIK","BDEFIJKL":"EJBDIFLK","BDEFHJKL":"EJBDHFLK","BDEFHIKL":"EIBDHFLK","BDEFHIJL":"EJBDHFLI","BDEFHIJK":"EJBDHFIK","BDEFGJKL":"EGBDJFLK","BDEFGIKL":"EGBDIFLK","BDEFGIJL":"EGBDJFLI","BDEFGIJK":"EGBDJFIK","BDEFGHKL":"EGBDHFLK","BDEFGHJL":"HGBDJFLE","BDEFGHJK":"HGBDJFEK","BDEFGHIL":"EGBDHFLI","BDEFGHIK":"EGBDHFIK","BDEFGHIJ":"HGBDJFEI","BCGHIJKL":"HJBCIGLK","BCFHIJKL":"HJBCIFLK","BCFGIJKL":"IGBCJFLK","BCFGHJKL":"HGBCJFLK","BCFGHIKL":"HGBCIFLK","BCFGHIJL":"HGBCJFLI","BCFGHIJK":"HGBCJFIK","BCEHIJKL":"EJBCIHLK","BCEGIJKL":"EJBCIGLK","BCEGHJKL":"EJBCHGLK","BCEGHIKL":"EGBCIHLK","BCEGHIJL":"EJBCHGLI","BCEGHIJK":"EJBCHGIK","BCEFIJKL":"EJBCIFLK","BCEFHJKL":"EJBCHFLK","BCEFHIKL":"EIBCHFLK","BCEFHIJL":"EJBCHFLI","BCEFHIJK":"EJBCHFIK","BCEFGJKL":"EGBCJFLK","BCEFGIKL":"EGBCIFLK","BCEFGIJL":"EGBCJFLI","BCEFGIJK":"EGBCJFIK","BCEFGHKL":"EGBCHFLK","BCEFGHJL":"HGBCJFLE","BCEFGHJK":"HGBCJFEK","BCEFGHIL":"EGBCHFLI","BCEFGHIK":"EGBCHFIK","BCEFGHIJ":"HGBCJFEI","BCDHIJKL":"HJBCIDLK","BCDGIJKL":"IGBCJDLK","BCDGHJKL":"HGBCJDLK","BCDGHIKL":"HGBCIDLK","BCDGHIJL":"HGBCJDLI","BCDGHIJK":"HGBCJDIK","BCDFIJKL":"CJBDIFLK","BCDFHJKL":"CJBDHFLK","BCDFHIKL":"CIBDHFLK","BCDFHIJL":"CJBDHFLI","BCDFHIJK":"CJBDHFIK","BCDFGJKL":"CGBDJFLK","BCDFGIKL":"CGBDIFLK","BCDFGIJL":"CGBDJFLI","BCDFGIJK":"CGBDJFIK","BCDFGHKL":"CGBDHFLK","BCDFGHJL":"CGBDHFLJ","BCDFGHJK":"HGBCJFDK","BCDFGHIL":"CGBDHFLI","BCDFGHIK":"CGBDHFIK","BCDFGHIJ":"HGBCJFDI","BCDEIJKL":"EJBCIDLK","BCDEHJKL":"EJBCHDLK","BCDEHIKL":"EIBCHDLK","BCDEHIJL":"EJBCHDLI","BCDEHIJK":"EJBCHDIK","BCDEGJKL":"EGBCJDLK","BCDEGIKL":"EGBCIDLK","BCDEGIJL":"EGBCJDLI","BCDEGIJK":"EGBCJDIK","BCDEGHKL":"EGBCHDLK","BCDEGHJL":"HGBCJDLE","BCDEGHJK":"HGBCJDEK","BCDEGHIL":"EGBCHDLI","BCDEGHIK":"EGBCHDIK","BCDEGHIJ":"HGBCJDEI","BCDEFJKL":"CJBDEFLK","BCDEFIKL":"CEBDIFLK","BCDEFIJL":"CJBDEFLI","BCDEFIJK":"CJBDEFIK","BCDEFHKL":"CEBDHFLK","BCDEFHJL":"CJBDHFLE","BCDEFHJK":"CJBDHFEK","BCDEFHIL":"CEBDHFLI","BCDEFHIK":"CEBDHFIK","BCDEFHIJ":"CJBDHFEI","BCDEFGKL":"CGBDEFLK","BCDEFGJL":"CGBDJFLE","BCDEFGJK":"CGBDJFEK","BCDEFGIL":"CGBDEFLI","BCDEFGIK":"CGBDEFIK","BCDEFGIJ":"CGBDJFEI","BCDEFGHL":"CGBDHFLE","BCDEFGHK":"CGBDHFEK","BCDEFGHJ":"HGBCJFDE","BCDEFGHI":"CGBDHFEI","AFGHIJKL":"HJIFAGLK","AEGHIJKL":"EJIAHGLK","AEFHIJKL":"EJIFAHLK","AEFGIJKL":"EJIFAGLK","AEFGHJKL":"EGJFAHLK","AEFGHIKL":"EGIFAHLK","AEFGHIJL":"EGJFAHLI","AEFGHIJK":"EGJFAHIK","ADGHIJKL":"HJIDAGLK","ADFHIJKL":"HJIDAFLK","ADFGIJKL":"IGJDAFLK","ADFGHJKL":"HGJDAFLK","ADFGHIKL":"HGIDAFLK","ADFGHIJL":"HGJDAFLI","ADFGHIJK":"HGJDAFIK","ADEHIJKL":"EJIDAHLK","ADEGIJKL":"EJIDAGLK","ADEGHJKL":"EGJDAHLK","ADEGHIKL":"EGIDAHLK","ADEGHIJL":"EGJDAHLI","ADEGHIJK":"EGJDAHIK","ADEFIJKL":"EJIDAFLK","ADEFHJKL":"HJEDAFLK","ADEFHIKL":"HEIDAFLK","ADEFHIJL":"HJEDAFLI","ADEFHIJK":"HJEDAFIK","ADEFGJKL":"EGJDAFLK","ADEFGIKL":"EGIDAFLK","ADEFGIJL":"EGJDAFLI","ADEFGIJK":"EGJDAFIK","ADEFGHKL":"HGEDAFLK","ADEFGHJL":"HGJDAFLE","ADEFGHJK":"HGJDAFEK","ADEFGHIL":"HGEDAFLI","ADEFGHIK":"HGEDAFIK","ADEFGHIJ":"HGJDAFEI","ACGHIJKL":"HJICAGLK","ACFHIJKL":"HJICAFLK","ACFGIJKL":"IGJCAFLK","ACFGHJKL":"HGJCAFLK","ACFGHIKL":"HGICAFLK","ACFGHIJL":"HGJCAFLI","ACFGHIJK":"HGJCAFIK","ACEHIJKL":"EJICAHLK","ACEGIJKL":"EJICAGLK","ACEGHJKL":"EGJCAHLK","ACEGHIKL":"EGICAHLK","ACEGHIJL":"EGJCAHLI","ACEGHIJK":"EGJCAHIK","ACEFIJKL":"EJICAFLK","ACEFHJKL":"HJECAFLK","ACEFHIKL":"HEICAFLK","ACEFHIJL":"HJECAFLI","ACEFHIJK":"HJECAFIK","ACEFGJKL":"EGJCAFLK","ACEFGIKL":"EGICAFLK","ACEFGIJL":"EGJCAFLI","ACEFGIJK":"EGJCAFIK","ACEFGHKL":"HGECAFLK","ACEFGHJL":"HGJCAFLE","ACEFGHJK":"HGJCAFEK","ACEFGHIL":"HGECAFLI","ACEFGHIK":"HGECAFIK","ACEFGHIJ":"HGJCAFEI","ACDHIJKL":"HJICADLK","ACDGIJKL":"IGJCADLK","ACDGHJKL":"HGJCADLK","ACDGHIKL":"HGICADLK","ACDGHIJL":"HGJCADLI","ACDGHIJK":"HGJCADIK","ACDFIJKL":"CJIDAFLK","ACDFHJKL":"HJFCADLK","ACDFHIKL":"HFICADLK","ACDFHIJL":"HJFCADLI","ACDFHIJK":"HJFCADIK","ACDFGJKL":"CGJDAFLK","ACDFGIKL":"CGIDAFLK","ACDFGIJL":"CGJDAFLI","ACDFGIJK":"CGJDAFIK","ACDFGHKL":"HGFCADLK","ACDFGHJL":"CGJDAFLH","ACDFGHJK":"HGJCAFDK","ACDFGHIL":"HGFCADLI","ACDFGHIK":"HGFCADIK","ACDFGHIJ":"HGJCAFDI","ACDEIJKL":"EJICADLK","ACDEHJKL":"HJECADLK","ACDEHIKL":"HEICADLK","ACDEHIJL":"HJECADLI","ACDEHIJK":"HJECADIK","ACDEGJKL":"EGJCADLK","ACDEGIKL":"EGICADLK","ACDEGIJL":"EGJCADLI","ACDEGIJK":"EGJCADIK","ACDEGHKL":"HGECADLK","ACDEGHJL":"HGJCADLE","ACDEGHJK":"HGJCADEK","ACDEGHIL":"HGECADLI","ACDEGHIK":"HGECADIK","ACDEGHIJ":"HGJCADEI","ACDEFJKL":"CJEDAFLK","ACDEFIKL":"CEIDAFLK","ACDEFIJL":"CJEDAFLI","ACDEFIJK":"CJEDAFIK","ACDEFHKL":"HEFCADLK","ACDEFHJL":"HJFCADLE","ACDEFHJK":"HJECAFDK","ACDEFHIL":"HEFCADLI","ACDEFHIK":"HEFCADIK","ACDEFHIJ":"HJECAFDI","ACDEFGKL":"CGEDAFLK","ACDEFGJL":"CGJDAFLE","ACDEFGJK":"CGJDAFEK","ACDEFGIL":"CGEDAFLI","ACDEFGIK":"CGEDAFIK","ACDEFGIJ":"CGJDAFEI","ACDEFGHL":"HGFCADLE","ACDEFGHK":"HGECAFDK","ACDEFGHJ":"HGJCAFDE","ACDEFGHI":"HGECAFDI","ABGHIJKL":"HJBAIGLK","ABFHIJKL":"HJBAIFLK","ABFGIJKL":"IJBFAGLK","ABFGHJKL":"HJBFAGLK","ABFGHIKL":"HGBAIFLK","ABFGHIJL":"HJBFAGLI","ABFGHIJK":"HJBFAGIK","ABEHIJKL":"EJBAIHLK","ABEGIJKL":"EJBAIGLK","ABEGHJKL":"EJBAHGLK","ABEGHIKL":"EGBAIHLK","ABEGHIJL":"EJBAHGLI","ABEGHIJK":"EJBAHGIK","ABEFIJKL":"EJBAIFLK","ABEFHJKL":"EJBFAHLK","ABEFHIKL":"EIBFAHLK","ABEFHIJL":"EJBFAHLI","ABEFHIJK":"EJBFAHIK","ABEFGJKL":"EJBFAGLK","ABEFGIKL":"EGBAIFLK","ABEFGIJL":"EJBFAGLI","ABEFGIJK":"EJBFAGIK","ABEFGHKL":"EGBFAHLK","ABEFGHJL":"HJBFAGLE","ABEFGHJK":"HJBFAGEK","ABEFGHIL":"EGBFAHLI","ABEFGHIK":"EGBFAHIK","ABEFGHIJ":"HJBFAGEI","ABDHIJKL":"IJBDAHLK","ABDGIJKL":"IJBDAGLK","ABDGHJKL":"HJBDAGLK","ABDGHIKL":"IGBDAHLK","ABDGHIJL":"HJBDAGLI","ABDGHIJK":"HJBDAGIK","ABDFIJKL":"IJBDAFLK","ABDFHJKL":"HJBDAFLK","ABDFHIKL":"HIBDAFLK","ABDFHIJL":"HJBDAFLI","ABDFHIJK":"HJBDAFIK","ABDFGJKL":"FJBDAGLK","ABDFGIKL":"IGBDAFLK","ABDFGIJL":"FJBDAGLI","ABDFGIJK":"FJBDAGIK","ABDFGHKL":"HGBDAFLK","ABDFGHJL":"HGBDAFLJ","ABDFGHJK":"HGBDAFJK","ABDFGHIL":"HGBDAFLI","ABDFGHIK":"HGBDAFIK","ABDFGHIJ":"HGBDAFIJ","ABDEIJKL":"EJBAIDLK","ABDEHJKL":"EJBDAHLK","ABDEHIKL":"EIBDAHLK","ABDEHIJL":"EJBDAHLI","ABDEHIJK":"EJBDAHIK","ABDEGJKL":"EJBDAGLK","ABDEGIKL":"EGBAIDLK","ABDEGIJL":"EJBDAGLI","ABDEGIJK":"EJBDAGIK","ABDEGHKL":"EGBDAHLK","ABDEGHJL":"HJBDAGLE","ABDEGHJK":"HJBDAGEK","ABDEGHIL":"EGBDAHLI","ABDEGHIK":"EGBDAHIK","ABDEGHIJ":"HJBDAGEI","ABDEFJKL":"EJBDAFLK","ABDEFIKL":"EIBDAFLK","ABDEFIJL":"EJBDAFLI","ABDEFIJK":"EJBDAFIK","ABDEFHKL":"HEBDAFLK","ABDEFHJL":"HJBDAFLE","ABDEFHJK":"HJBDAFEK","ABDEFHIL":"HEBDAFLI","ABDEFHIK":"HEBDAFIK","ABDEFHIJ":"HJBDAFEI","ABDEFGKL":"EGBDAFLK","ABDEFGJL":"EGBDAFLJ","ABDEFGJK":"EGBDAFJK","ABDEFGIL":"EGBDAFLI","ABDEFGIK":"EGBDAFIK","ABDEFGIJ":"EGBDAFIJ","ABDEFGHL":"HGBDAFLE","ABDEFGHK":"HGBDAFEK","ABDEFGHJ":"HGBDAFEJ","ABDEFGHI":"HGBDAFEI","ABCHIJKL":"IJBCAHLK","ABCGIJKL":"IJBCAGLK","ABCGHJKL":"HJBCAGLK","ABCGHIKL":"IGBCAHLK","ABCGHIJL":"HJBCAGLI","ABCGHIJK":"HJBCAGIK","ABCFIJKL":"IJBCAFLK","ABCFHJKL":"HJBCAFLK","ABCFHIKL":"HIBCAFLK","ABCFHIJL":"HJBCAFLI","ABCFHIJK":"HJBCAFIK","ABCFGJKL":"CJBFAGLK","ABCFGIKL":"IGBCAFLK","ABCFGIJL":"CJBFAGLI","ABCFGIJK":"CJBFAGIK","ABCFGHKL":"HGBCAFLK","ABCFGHJL":"HGBCAFLJ","ABCFGHJK":"HGBCAFJK","ABCFGHIL":"HGBCAFLI","ABCFGHIK":"HGBCAFIK","ABCFGHIJ":"HGBCAFIJ","ABCEIJKL":"EJBAICLK","ABCEHJKL":"EJBCAHLK","ABCEHIKL":"EIBCAHLK","ABCEHIJL":"EJBCAHLI","ABCEHIJK":"EJBCAHIK","ABCEGJKL":"EJBCAGLK","ABCEGIKL":"EGBAICLK","ABCEGIJL":"EJBCAGLI","ABCEGIJK":"EJBCAGIK","ABCEGHKL":"EGBCAHLK","ABCEGHJL":"HJBCAGLE","ABCEGHJK":"HJBCAGEK","ABCEGHIL":"EGBCAHLI","ABCEGHIK":"EGBCAHIK","ABCEGHIJ":"HJBCAGEI","ABCEFJKL":"EJBCAFLK","ABCEFIKL":"EIBCAFLK","ABCEFIJL":"EJBCAFLI","ABCEFIJK":"EJBCAFIK","ABCEFHKL":"HEBCAFLK","ABCEFHJL":"HJBCAFLE","ABCEFHJK":"HJBCAFEK","ABCEFHIL":"HEBCAFLI","ABCEFHIK":"HEBCAFIK","ABCEFHIJ":"HJBCAFEI","ABCEFGKL":"EGBCAFLK","ABCEFGJL":"EGBCAFLJ","ABCEFGJK":"EGBCAFJK","ABCEFGIL":"EGBCAFLI","ABCEFGIK":"EGBCAFIK","ABCEFGIJ":"EGBCAFIJ","ABCEFGHL":"HGBCAFLE","ABCEFGHK":"HGBCAFEK","ABCEFGHJ":"HGBCAFEJ","ABCEFGHI":"HGBCAFEI","ABCDIJKL":"IJBCADLK","ABCDHJKL":"HJBCADLK","ABCDHIKL":"HIBCADLK","ABCDHIJL":"HJBCADLI","ABCDHIJK":"HJBCADIK","ABCDGJKL":"CJBDAGLK","ABCDGIKL":"IGBCADLK","ABCDGIJL":"CJBDAGLI","ABCDGIJK":"CJBDAGIK","ABCDGHKL":"HGBCADLK","ABCDGHJL":"HGBCADLJ","ABCDGHJK":"HGBCADJK","ABCDGHIL":"HGBCADLI","ABCDGHIK":"HGBCADIK","ABCDGHIJ":"HGBCADIJ","ABCDFJKL":"CJBDAFLK","ABCDFIKL":"CIBDAFLK","ABCDFIJL":"CJBDAFLI","ABCDFIJK":"CJBDAFIK","ABCDFHKL":"HFBCADLK","ABCDFHJL":"CJBDAFLH","ABCDFHJK":"HJBCAFDK","ABCDFHIL":"HFBCADLI","ABCDFHIK":"HFBCADIK","ABCDFHIJ":"HJBCAFDI","ABCDFGKL":"CGBDAFLK","ABCDFGJL":"CGBDAFLJ","ABCDFGJK":"CGBDAFJK","ABCDFGIL":"CGBDAFLI","ABCDFGIK":"CGBDAFIK","ABCDFGIJ":"CGBDAFIJ","ABCDFGHL":"CGBDAFLH","ABCDFGHK":"HGBCAFDK","ABCDFGHJ":"HGBCAFDJ","ABCDFGHI":"HGBCAFDI","ABCDEJKL":"EJBCADLK","ABCDEIKL":"EIBCADLK","ABCDEIJL":"EJBCADLI","ABCDEIJK":"EJBCADIK","ABCDEHKL":"HEBCADLK","ABCDEHJL":"HJBCADLE","ABCDEHJK":"HJBCADEK","ABCDEHIL":"HEBCADLI","ABCDEHIK":"HEBCADIK","ABCDEHIJ":"HJBCADEI","ABCDEGKL":"EGBCADLK","ABCDEGJL":"EGBCADLJ","ABCDEGJK":"EGBCADJK","ABCDEGIL":"EGBCADLI","ABCDEGIK":"EGBCADIK","ABCDEGIJ":"EGBCADIJ","ABCDEGHL":"HGBCADLE","ABCDEGHK":"HGBCADEK","ABCDEGHJ":"HGBCADEJ","ABCDEGHI":"HGBCADEI","ABCDEFKL":"CEBDAFLK","ABCDEFJL":"CJBDAFLE","ABCDEFJK":"CJBDAFEK","ABCDEFIL":"CEBDAFLI","ABCDEFIK":"CEBDAFIK","ABCDEFIJ":"CJBDAFEI","ABCDEFHL":"HFBCADLE","ABCDEFHK":"HEBCAFDK","ABCDEFHJ":"HJBCAFDE","ABCDEFHI":"HEBCAFDI","ABCDEFGL":"CGBDAFLE","ABCDEFGK":"CGBDAFEK","ABCDEFGJ":"CGBDAFEJ","ABCDEFGI":"CGBDAFEI","ABCDEFGH":"HGBCAFDE"};
+
+/* Round of 32 match definitions (official 2026 bracket, match numbers 73–88).
+   Each match: {no, top, bottom} where a slot ref is:
+     {w:"A"} group A winner, {r:"B"} group B runner-up, {t3:"A"} the 3rd-placer
+     assigned to group A's winner via the table.
+   Order below is arranged so the bracket tree (R32->R16->QF->SF->Final)
+   keeps same-group teams apart, following FIFA's published bracket. */
+const R32 = [
+  {no:74, top:{w:"E"}, bottom:{t3:"E"}},
+  {no:73, top:{r:"A"}, bottom:{r:"B"}},
+  {no:75, top:{w:"F"}, bottom:{r:"C"}},
+  {no:76, top:{w:"C"}, bottom:{r:"F"}},
+  {no:77, top:{w:"I"}, bottom:{t3:"I"}},
+  {no:78, top:{r:"E"}, bottom:{r:"I"}},
+  {no:79, top:{w:"A"}, bottom:{t3:"A"}},
+  {no:80, top:{w:"L"}, bottom:{t3:"L"}},
+  {no:81, top:{w:"D"}, bottom:{t3:"D"}},
+  {no:82, top:{w:"G"}, bottom:{t3:"G"}},
+  {no:83, top:{r:"K"}, bottom:{r:"L"}},
+  {no:84, top:{w:"H"}, bottom:{r:"J"}},
+  {no:85, top:{w:"B"}, bottom:{t3:"B"}},
+  {no:86, top:{w:"J"}, bottom:{r:"H"}},
+  {no:87, top:{w:"K"}, bottom:{t3:"K"}},
+  {no:88, top:{r:"D"}, bottom:{r:"G"}}
+];
+
+/* The knockout tree, by match number. R16 feeds from two R32 matches, etc.
+   Official 2026 pairings (left half then right half). */
+const TREE = {
+  R16:[
+    {no:89, from:[74,73]}, {no:90, from:[76,75]},
+    {no:91, from:[80,79]}, {no:92, from:[78,77]},
+    {no:93, from:[83,84]}, {no:94, from:[81,82]},
+    {no:95, from:[86,85]}, {no:96, from:[88,87]}
+  ],
+  QF:[
+    {no:97, from:[89,90]}, {no:98, from:[92,91]},
+    {no:99, from:[94,93]}, {no:100, from:[96,95]}
+  ],
+  SF:[
+    {no:101, from:[97,98]}, {no:102, from:[99,100]}
+  ],
+  F:[
+    {no:103, from:[101,102]}
+  ]
+};
+
+const STEPS=[
+  {id:"hero",label:"Home"},
+  {id:"groups",label:"Groups"},
+  {id:"thirds",label:"Thirds"},
+  {id:"bracket",label:"Bracket"},
+  {id:"share",label:"Share"}
+];
+
+/* ============================================================
+   STATE
+   picks = {
+     groups: {A:[t0,t1,t2,t3], ...}   ordered 1st..4th
+     thirds: [groupLetter,...]        12 entries, ranked best..worst
+     winners: {matchNo:"top"|"bottom"}  knockout picks
+   }
+   ============================================================ */
+let picks = freshPicks();
+let viewMode = false;
+
+function freshPicks(){
+  const groups={};
+  GROUP_LETTERS.forEach(g=>groups[g]=GROUPS[g].slice());
+  return {groups, thirds:GROUP_LETTERS.slice(), winners:{}};
+}
+
+/* ============================================================
+   DERIVED HELPERS
+   ============================================================ */
+function flag(t){ return FLAG[t]||"🏳️"; }
+function winnerOf(g){ return picks.groups[g][0]; }
+function runnerOf(g){ return picks.groups[g][1]; }
+function thirdOf(g){ return picks.groups[g][2]; }
+
+/* The 8 advancing third-place groups = top 8 of the ranked thirds list */
+function advancingThirdGroups(){ return picks.thirds.slice(0,8); }
+
+/* Map: winnerGroup -> assigned 3rd-place GROUP letter, via FIFA table.
+   Returns {} if lookup not resolvable. */
+function thirdAssignments(){
+  const adv = advancingThirdGroups();
+  const key = adv.slice().sort().join("");
+  const row = THIRD_TABLE[key];
+  const out = {};
+  if(!row) return out;
+  THIRD_WINNER_ORDER.forEach((wg,i)=> out[wg]=row[i]);
+  return out;
+}
+
+/* Resolve a slot ref {w|r|t3} to an actual team name, or null if unknown */
+function resolveSlot(ref){
+  if(ref.w) return winnerOf(ref.w);
+  if(ref.r) return runnerOf(ref.r);
+  if(ref.t3){
+    const asn = thirdAssignments();
+    const grp = asn[ref.t3];      // which 3rd-place group fills this winner's slot
+    if(!grp) return null;
+    return thirdOf(grp);
+  }
+  return null;
+}
+/* A short seed tag for display, e.g. "1A", "2B", "3F" */
+function slotSeed(ref){
+  if(ref.w) return "1"+ref.w;
+  if(ref.r) return "2"+ref.r;
+  if(ref.t3){ const asn=thirdAssignments(); const g=asn[ref.t3]; return g?("3"+g):"3rd"; }
+  return "";
+}
+
+/* Build the full resolved bracket: for each match number -> {top, bottom} team names.
+   Knockout matches resolve from winners[] picks. Returns map no->{top,bottom,topSeed,botSeed} */
+function buildBracket(){
+  const M={}; // no -> {top, bottom, topSeed, botSeed}
+  // R32
+  R32.forEach(m=>{
+    M[m.no]={
+      top:resolveSlot(m.top), bottom:resolveSlot(m.bottom),
+      topSeed:slotSeed(m.top), botSeed:slotSeed(m.bottom)
+    };
+  });
+  // later rounds
+  ["R16","QF","SF","F"].forEach(rk=>{
+    TREE[rk].forEach(m=>{
+      const a=advancerOf(m.from[0],M), b=advancerOf(m.from[1],M);
+      M[m.no]={top:a, bottom:b, topSeed:"", botSeed:""};
+    });
+  });
+  return M;
+}
+/* winner team-name of a match given current picks; null if not picked/unresolved */
+function advancerOf(no,M){
+  const m=M[no]; if(!m) return null;
+  const pick=picks.winners[no];
+  if(pick==="top") return m.top;
+  if(pick==="bottom") return m.bottom;
+  return null;
+}
+
+/* Are all 12 groups ordered? (always true — groups always have a full order) */
+function allGroupsSet(){ return true; }
+
+/* completeness counters */
+function knockoutPicked(){ return Object.keys(picks.winners).length; }
+function knockoutTotal(){ return 31; } // 16+8+4+2+1
+function champion(){ const M=buildBracket(); return advancerOf(103,M); }
+
+/* ============================================================
+   PERMUTATION ENCODING  (4! = 24 per group; 12! for thirds)
+   ============================================================ */
+function permToIndex(arr, base){
+  // Lehmer code: arr is a permutation of base (array of items). Returns integer index.
+  const items=base.slice(); let idx=0;
+  for(let i=0;i<arr.length;i++){
+    const pos=items.indexOf(arr[i]);
+    idx=idx*(items.length)+pos;
+    items.splice(pos,1);
+  }
+  return idx;
+}
+function indexToPerm(idx, base){
+  const items=base.slice(); const out=[];
+  // need factorial-radix decode
+  const n=base.length;
+  let fact=1; for(let i=2;i<n;i++) fact*=i; // (n-1)!
+  let remaining=idx;
+  for(let i=0;i<n;i++){
+    const f = factorial(n-1-i);
+    const pos=Math.floor(remaining/f);
+    remaining=remaining%f;
+    out.push(items[pos]);
+    items.splice(pos,1);
+  }
+  return out;
+}
+function factorial(n){let f=1;for(let i=2;i<=n;i++)f*=i;return f;}
+
+/* ============================================================
+   STATE  <->  URL HASH
+   Layout (big integer, base-mixed, then base64url):
+     - 12 group perms: each 0..23  (radix 24)
+     - 1 thirds perm:  0..(12!-1)  (radix 12!)
+     - 31 knockout bits: 0/1       (radix 2 each)
+   We pack into a BigInt then base64url it.
+   ============================================================ */
+const VERSION="A"; // 1-char version prefix
+const KO_ORDER = [ // canonical match-number order for the 31 knockout picks
+  74,73,75,76,77,78,79,80,81,82,83,84,85,86,87,88, // R32 (16)
+  89,90,91,92,93,94,95,96, // R16 (8)
+  97,98,99,100, // QF (4)
+  101,102, // SF (2)
+  103 // F (1)
+];
+
+function encodePicks(){
+  let val=0n;
+  // group perms (radix 24), in GROUP_LETTERS order
+  GROUP_LETTERS.forEach(g=>{
+    const idx=permToIndex(picks.groups[g], GROUPS[g]);
+    val = val*24n + BigInt(idx);
+  });
+  // thirds perm (radix 12!)
+  const F12=BigInt(factorial(12));
+  const tIdx=BigInt(permToIndex(picks.thirds, GROUP_LETTERS));
+  val = val*F12 + tIdx;
+  // knockout bits
+  KO_ORDER.forEach(no=>{
+    const p=picks.winners[no];
+    const bit = p==="bottom"?2n : p==="top"?1n : 0n; // 0=unset,1=top,2=bottom (radix 3)
+    val = val*3n + bit;
+  });
+  return VERSION + bigintToB64(val);
+}
+
+function decodePicks(str){
+  if(!str || str[0]!==VERSION) return null;
+  let val=b64ToBigint(str.slice(1));
+  const np=freshPicks();
+  // reverse order of encode
+  // knockout bits (radix 3), reverse of KO_ORDER
+  const koRev=KO_ORDER.slice().reverse();
+  koRev.forEach(no=>{
+    const bit = Number(val % 3n); val/=3n;
+    if(bit===1) np.winners[no]="top";
+    else if(bit===2) np.winners[no]="bottom";
+  });
+  // thirds
+  const F12=BigInt(factorial(12));
+  const tIdx=Number(val % F12); val/=F12;
+  np.thirds=indexToPerm(tIdx, GROUP_LETTERS);
+  // group perms reverse
+  GROUP_LETTERS.slice().reverse().forEach(g=>{
+    const idx=Number(val % 24n); val/=24n;
+    np.groups[g]=indexToPerm(idx, GROUPS[g]);
+  });
+  return np;
+}
+
+/* BigInt <-> base64url */
+function bigintToB64(v){
+  if(v===0n) return "A";
+  let bytes=[];
+  while(v>0n){ bytes.push(Number(v & 255n)); v>>=8n; }
+  bytes.reverse();
+  let bin=String.fromCharCode(...bytes);
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64ToBigint(s){
+  s=s.replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length%4) s+="=";
+  const bin=atob(s);
+  let v=0n;
+  for(let i=0;i<bin.length;i++){ v=(v<<8n)+BigInt(bin.charCodeAt(i)); }
+  return v;
+}
+
+function updateHash(){
+  const code=encodePicks();
+  history.replaceState(null,"","#"+code);
+  const link=document.getElementById("shareLink");
+  if(link) link.value=location.href;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function go(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("active",s.id===id));
+  buildStepper(id);
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(id==="thirds") renderThirds();
+  if(id==="bracket") renderBracket();
+  if(id==="share"){ updateHash(); renderRecap(); }
+}
+function buildStepper(activeId){
+  const inner=document.getElementById("stepperInner");
+  inner.innerHTML="";
+  STEPS.forEach((s,i)=>{
+    const b=document.createElement("button");
+    b.className="step"+(s.id===activeId?" active":"")+(stepDone(s.id)?" done":"");
+    b.innerHTML=`<span class="num">${i===0?"★":i}</span>${s.label}`;
+    b.onclick=()=>go(s.id);
+    inner.appendChild(b);
+  });
+}
+function stepDone(id){
+  if(id==="groups") return true;
+  if(id==="thirds") return true;
+  if(id==="bracket") return knockoutPicked()===knockoutTotal();
+  if(id==="share") return !!champion();
+  return false;
+}
+
+/* ============================================================
+   RENDER: HERO
+   ============================================================ */
+function renderHero(){
+  const all=[];
+  GROUP_LETTERS.forEach(g=>GROUPS[g].forEach(t=>all.push(flag(t))));
+  document.getElementById("heroFlags").innerHTML=all.map(f=>`<span>${f}</span>`).join("");
+}
+
+/* ============================================================
+   RENDER: GROUPS  (drag to reorder within a group)
+   ============================================================ */
+function renderGroups(){
+  const grid=document.getElementById("groupsGrid");
+  grid.innerHTML="";
+  GROUP_LETTERS.forEach(g=>{
+    const card=document.createElement("div");
+    card.className="gcard";
+    card.innerHTML=`<div class="ghead"><span class="gname">Group ${g}</span><span class="gtag">DRAG TO RANK</span></div>`;
+    const ul=document.createElement("ul");
+    ul.className="glist"; ul.dataset.group=g;
+    picks.groups[g].forEach((t,i)=>{
+      ul.appendChild(teamRow(g,t,i));
+      if(i===1){ const ql=document.createElement("div"); ql.className="qual-line"; ul.appendChild(ql); }
+    });
+    card.appendChild(ul);
+    grid.appendChild(card);
+    makeSortable(ul, g);
+  });
+  renderGroupProgress();
+}
+function teamRow(g,t,i){
+  const li=document.createElement("li");
+  li.className="team"; li.dataset.team=t; li.dataset.pos=(i+1);
+  li.innerHTML=`<span class="rank">${i+1}</span><span class="flag">${flag(t)}</span><span class="tname">${t}</span><span class="grip">⠿</span>`;
+  return li;
+}
+function renderGroupProgress(){
+  const el=document.getElementById("groupProgress");
+  el.innerHTML=`<span class="progress">GROUPS LOCKED <b>12 / 12</b> · 24 teams advance + best thirds</span>`;
+}
+
+/* ============================================================
+   RENDER: THIRDS  (drag to rank the 12 third-place teams)
+   ============================================================ */
+function renderThirds(){
+  const wrap=document.getElementById("thirdWrap");
+  wrap.innerHTML="";
+  picks.thirds.forEach((g,i)=>{
+    if(i===8){ const cut=document.createElement("div"); cut.className="third-cutline"; cut.textContent="✄  CUT LINE — TOP 8 ADVANCE  ✄"; wrap.appendChild(cut); }
+    const team=thirdOf(g);
+    const item=document.createElement("div");
+    item.className="third-item"+(i<8?" advancing":"");
+    item.dataset.group=g;
+    item.innerHTML=`<span class="seed">${i+1}</span><span class="flag">${flag(team)}</span>
+       <span class="tname">${team}</span><span class="grp">3rd · Grp ${g}</span>`;
+    wrap.appendChild(item);
+  });
+  makeThirdsSortable(wrap);
+}
+
+/* ============================================================
+   RENDER: BRACKET
+   ============================================================ */
+function renderBracket(){
+  const M=buildBracket();
+  const el=document.getElementById("bracketEl");
+  el.innerHTML="";
+  const cols=[
+    {label:"Round of 32",nos:R32.map(m=>m.no)},
+    {label:"Round of 16",nos:TREE.R16.map(m=>m.no)},
+    {label:"Quarter-finals",nos:TREE.QF.map(m=>m.no)},
+    {label:"Semi-finals",nos:TREE.SF.map(m=>m.no)},
+    {label:"Final",nos:TREE.F.map(m=>m.no),final:true}
+  ];
+  cols.forEach(col=>{
+    const r=document.createElement("div");
+    r.className="round"+(col.final?" r-final":"");
+    r.innerHTML=`<div class="round-label">${col.label}</div>`;
+    col.nos.forEach(no=>r.appendChild(matchEl(no,M)));
+    el.appendChild(r);
+  });
+  // champion card
+  const champ=advancerOf(103,M);
+  const last=el.querySelector(".round.r-final");
+  if(champ){
+    const c=document.createElement("div");
+    c.className="champ-card stamp-in";
+    c.innerHTML=`<div class="ct">★ WORLD CHAMPIONS ★</div><div class="cn">${champ}</div><div class="cf">${flag(champ)}</div>`;
+    last.appendChild(c);
+  }
+  // warn / progress
+  document.getElementById("bracketWarn").style.display="none";
+  const prog=document.getElementById("bracketProgress");
+  prog.innerHTML=`<span class="progress">KNOCKOUT PICKS <b>${knockoutPicked()} / ${knockoutTotal()}</b>${champ?` · CHAMPION: ${flag(champ)} ${champ}`:""}</span>`;
+}
+function matchEl(no,M){
+  const m=M[no];
+  const wrap=document.createElement("div");
+  wrap.className="match";
+  wrap.innerHTML=`<span class="mno">M${no}</span>`;
+  wrap.appendChild(slotEl(no,"top",m.top,m.topSeed,M));
+  wrap.appendChild(slotEl(no,"bottom",m.bottom,m.botSeed,M));
+  return wrap;
+}
+function slotEl(no,side,team,seed,M){
+  const d=document.createElement("div");
+  const picked=picks.winners[no];
+  if(!team){
+    d.className="slot empty";
+    d.innerHTML=`<span class="flag">·</span><span class="nm">${seed?("Winner / "+seed):"TBD"}</span>`;
+    return d;
+  }
+  let cls="slot";
+  if(picked===side) cls+=" winner";
+  else if(picked && picked!==side) cls+=" loser";
+  d.className=cls;
+  d.innerHTML=`<span class="flag">${flag(team)}</span><span class="nm">${team}</span>${seed?`<span class="seedtag">${seed}</span>`:""}`;
+  if(!viewMode){
+    d.onclick=()=>pickWinner(no,side,team);
+  }
+  return d;
+}
+function pickWinner(no,side,team){
+  const prev=picks.winners[no];
+  picks.winners[no]=side;
+  // If changing a pick, clear any downstream picks that depended on the old winner
+  if(prev && prev!==side) clearDownstream(no);
+  updateHash();
+  renderBracket();
+  buildStepper("bracket");
+  if(no===103){ toast(`🏆 ${team} are your champions!`); }
+}
+/* When a match's winner changes, any later match that used the old team must reset */
+function clearDownstream(no){
+  // find the match that 'no' feeds into, recursively clear its pick
+  const feeders={};
+  ["R16","QF","SF","F"].forEach(rk=>TREE[rk].forEach(m=>{ m.from.forEach(f=>feeders[f]=m.no); }));
+  let cur=no;
+  while(feeders[cur]!==undefined){
+    const next=feeders[cur];
+    if(picks.winners[next]!==undefined) delete picks.winners[next];
+    cur=next;
+  }
+}
+
+/* ============================================================
+   RENDER: SHARE RECAP
+   ============================================================ */
+function renderRecap(){
+  const M=buildBracket();
+  const champ=advancerOf(103,M);
+  const f1=advancerOf(101,M), f2=advancerOf(102,M);
+  const recap=document.getElementById("recap");
+  const rows=[
+    ["Champion", champ],
+    ["Runner-up", finalLoser(M)],
+    ["Semi-finalist", f1],
+    ["Semi-finalist", f2],
+    ["Group A Winner", winnerOf("A")],
+    ["Group winners set", "12 / 12"]
+  ];
+  recap.innerHTML=rows.map(([l,v])=>{
+    const fl = v && FLAG[v] ? flag(v) : "";
+    return `<div class="rc"><div class="l">${l}</div><div class="v">${fl} ${v||"—"}</div></div>`;
+  }).join("");
+}
+function finalLoser(M){
+  const champ=advancerOf(103,M); if(!champ) return null;
+  const fm=M[103];
+  return champ===fm.top?fm.bottom:fm.top;
+}
+
+/* ============================================================
+   DRAG & DROP  (pointer-based, works on touch + mouse)
+   Generic sortable for a list container. onReorder(newOrderArray).
+   ============================================================ */
+function makeSortable(container, group){
+  enableSortable(container, ".team", "team", (orderEls)=>{
+    picks.groups[group]=orderEls.map(el=>el.dataset.team);
+    // re-render this group's ranks/flags
+    renderGroups();
+    invalidateBracket();
+    updateHash();
+  });
+}
+function makeThirdsSortable(container){
+  enableSortable(container, ".third-item", "third-item", (orderEls)=>{
+    picks.thirds=orderEls.map(el=>el.dataset.group);
+    renderThirds();
+    invalidateBracket();
+    updateHash();
+  });
+}
+/* When group order or thirds change, the bracket's auto-population changes.
+   Knockout picks that referenced now-impossible matchups should be cleared. */
+function invalidateBracket(){
+  picks.winners={}; // simplest correct approach: reset knockout picks when seeds change
+}
+
+function enableSortable(container, itemSel, dragClass, onReorder){
+  let dragEl=null, placeholder=null, startY=0, started=false;
+
+  container.querySelectorAll(itemSel).forEach(item=>{
+    item.addEventListener("pointerdown", e=>{
+      if(viewMode) return;
+      if(e.button!==undefined && e.button!==0) return;
+      dragEl=item; startY=e.clientY; started=false;
+      item.setPointerCapture(e.pointerId);
+      const move=ev=>{
+        if(!started && Math.abs(ev.clientY-startY)<4) return;
+        if(!started){
+          started=true;
+          item.classList.add("dragging");
+          placeholder=document.createElement(item.tagName);
+          placeholder.style.height=item.offsetHeight+"px";
+          placeholder.style.margin=getComputedStyle(item).margin;
+          placeholder.style.border="2px dashed var(--brick)";
+          placeholder.style.background="rgba(198,61,32,.08)";
+          item.parentNode.insertBefore(placeholder,item.nextSibling);
+          item.style.position="relative";item.style.zIndex="20";
+        }
+        item.style.transform=`translateY(${ev.clientY-startY}px)`;
+        // find sibling to swap with
+        const siblings=[...container.querySelectorAll(itemSel)].filter(s=>s!==item);
+        const y=ev.clientY;
+        let placed=false;
+        for(const s of siblings){
+          const r=s.getBoundingClientRect();
+          if(y < r.top + r.height/2){
+            container.insertBefore(placeholder,s); placed=true; break;
+          }
+        }
+        if(!placed) container.appendChild(placeholder);
+      };
+      const up=ev=>{
+        item.removeEventListener("pointermove",move);
+        item.removeEventListener("pointerup",up);
+        item.removeEventListener("pointercancel",up);
+        if(started && placeholder){
+          container.insertBefore(item,placeholder);
+          placeholder.remove();
+          item.classList.remove("dragging");
+          item.style.transform="";item.style.position="";item.style.zIndex="";
+          const order=[...container.querySelectorAll(itemSel)];
+          onReorder(order);
+        }
+        dragEl=null;placeholder=null;started=false;
+      };
+      item.addEventListener("pointermove",move);
+      item.addEventListener("pointerup",up);
+      item.addEventListener("pointercancel",up);
+    });
+  });
+}
+
+/* ============================================================
+   SHARE / COPY / RESET
+   ============================================================ */
+function copyLink(){
+  const inp=document.getElementById("shareLink");
+  inp.value=location.href;
+  inp.select();
+  navigator.clipboard?.writeText(location.href).then(
+    ()=>toast("Link copied! Save it or send it."),
+    ()=>{ document.execCommand("copy"); toast("Link copied!"); }
+  );
+}
+function newCard(){
+  if(!confirm("Start a fresh pick'em card? Your current link still works if you saved it.")) return;
+  picks=freshPicks();
+  history.replaceState(null,"",location.pathname);
+  renderAll();
+  go("groups");
+  toast("Fresh card — make your picks!");
+}
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2400);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function renderAll(){
+  renderHero();
+  renderGroups();
+}
+function init(){
+  renderAll();
+  // load from hash?
+  const hash=location.hash.slice(1);
+  if(hash){
+    const loaded=decodePicks(hash);
+    if(loaded){
+      picks=loaded;
+      renderGroups();
+      // show a view banner + jump to bracket
+      injectViewBanner();
+      go("bracket");
+      buildStepper("bracket");
+      document.getElementById("heroResume").style.display="";
+      toast("Picks loaded from link!");
+      return;
+    }
+  }
+  buildStepper("hero");
+}
+function injectViewBanner(){
+  // a soft banner letting the user know they're viewing a saved card (still editable)
+  if(document.getElementById("viewBanner")) return;
+  const champ=champion();
+  const b=document.createElement("div");
+  b.id="viewBanner"; b.className="viewbanner";
+  b.innerHTML=`<span class="vt">📋 Viewing a saved pick'em card${champ?` · 🏆 ${champ}`:""}</span>
+     <span style="font-family:'Space Mono',monospace;font-size:12px">Tap any matchup to edit and create your own link.</span>`;
+  const sec=document.getElementById("bracket");
+  sec.insertBefore(b, sec.firstChild.nextSibling);
+}
+
+init();
+</script>
+</body>
+</html>
