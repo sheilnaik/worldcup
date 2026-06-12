@@ -275,6 +275,64 @@ section.active{display:block}
 #scorePanel .scorecard{margin-bottom:0;margin-top:0}
 #scorePanel{margin-bottom:24px}
 
+/* ====== SCORING RULEBOOK (Score page only) ====== */
+.rulebook{margin:34px 0 8px}
+.rb-banner{
+  background:var(--ink);color:var(--paper);border:4px solid var(--brick);box-shadow:var(--shadow);
+  padding:16px 22px;display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.rb-banner-t{font-family:'Anton',sans-serif;font-size:clamp(22px,4vw,34px);letter-spacing:.03em;text-transform:uppercase;color:var(--ochre)}
+.rb-banner-s{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.18em;opacity:.7;text-transform:uppercase}
+
+.rb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:18px}
+.rb-card{
+  background:var(--paper-2);border:3px solid var(--ink);box-shadow:var(--shadow-sm);
+  padding:0 18px 18px;display:flex;flex-direction:column;position:relative;
+  background-image:radial-gradient(rgba(34,26,18,.045) 1px,transparent 1.4px);background-size:12px 12px;
+}
+.rb-card-head{
+  display:flex;align-items:center;gap:12px;margin:0 -18px 14px;padding:11px 18px;
+  background:var(--ink);color:var(--paper);
+}
+.rb-no{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;background:var(--ochre);color:var(--ink);
+  width:30px;height:30px;display:grid;place-items:center;flex:none;border:2px solid var(--paper)}
+.rb-name{font-family:'Anton',sans-serif;font-size:clamp(18px,2.6vw,23px);letter-spacing:.03em;line-height:1}
+.rb-group   .rb-no{background:var(--brick);color:#fff}
+.rb-thirds  .rb-no{background:var(--ochre);color:var(--ink)}
+.rb-bracket .rb-no{background:var(--teal);color:#fff}
+.rb-lede{font-family:'Space Mono',monospace;font-size:12px;line-height:1.55;margin:0 0 12px;opacity:.78}
+.rb-rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.rb-rules li{
+  display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--cream-line);
+}
+.rb-rules li:last-child{border-bottom:0}
+.rb-rule{flex:1;font-size:13px;font-weight:700;line-height:1.25}
+.rb-pts{
+  flex:none;font-family:'Anton',sans-serif;font-size:22px;min-width:42px;text-align:center;line-height:1;
+  border:2px solid var(--ink);padding:3px 0;background:var(--paper);
+}
+.rb-group   .rb-pts{color:var(--brick)}
+.rb-thirds  .rb-pts{color:var(--brick-deep);background:#f6e7c0}
+.rb-bracket .rb-pts{color:var(--teal-deep)}
+.rb-foot{font-family:'Space Mono',monospace;font-size:11px;line-height:1.55;margin:13px 0 0;opacity:.72;
+  border-top:2px solid var(--ink);padding-top:11px}
+.rb-foot b{color:var(--brick-deep)}
+
+.rb-stakes{
+  margin-top:18px;background:var(--brick);color:#fff;border:4px solid var(--ink);box-shadow:var(--shadow);
+  padding:18px 22px;position:relative;overflow:hidden;
+}
+.rb-stakes::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;
+  background-image:radial-gradient(#fff 1px,transparent 1.4px);background-size:13px 13px}
+.rb-stakes-lab{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.26em;text-transform:uppercase;opacity:.85}
+.rb-stakes-row{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 6px;position:relative;z-index:1}
+.rb-stake{flex:1;min-width:120px;background:rgba(0,0,0,.18);border:2px solid var(--ink);padding:12px 14px}
+.rb-stake-n{display:block;font-family:'Anton',sans-serif;font-size:clamp(30px,6vw,46px);line-height:.9;
+  text-shadow:3px 3px 0 rgba(0,0,0,.25)}
+.rb-stake-sub{font-size:14px;opacity:.7;-webkit-text-stroke:0}
+.rb-stake-l{display:block;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.06em;margin-top:4px;opacity:.95}
+.rb-stakes-note{font-family:'Space Mono',monospace;font-size:11px;line-height:1.6;margin:10px 0 0;opacity:.9;position:relative;z-index:1}
+
 /* view-mode banner */
 .viewbanner{background:var(--teal);color:#fff;border:3px solid var(--ink);box-shadow:var(--shadow-sm);
   padding:14px 18px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -454,6 +512,66 @@ footer{border-top:3px solid var(--ink);padding:26px 0;text-align:center;font-fam
       <div class="right">Your picks are scored against real results as the tournament unfolds. Points update automatically the moment a group locks or a knockout is decided.</div>
     </div>
     <div id="scorePanelMain"></div>
+
+    <div class="rulebook">
+      <div class="rb-banner">
+        <span class="rb-banner-t">How The Points Work</span>
+        <span class="rb-banner-s">Official Pick'Em Scoring · Three Parts</span>
+      </div>
+
+      <div class="rb-grid">
+
+        <div class="rb-card rb-group">
+          <div class="rb-card-head"><span class="rb-no">01</span><span class="rb-name">Group Stage Order</span></div>
+          <p class="rb-lede">Rewards precision without going all-or-nothing — partial credit for calling who advances vs. who goes home.</p>
+          <ul class="rb-rules">
+            <li><span class="rb-rule">Pick a team 1st &amp; they finish 1st</span><span class="rb-pts">4</span></li>
+            <li><span class="rb-rule">Pick a team 2nd &amp; they finish 2nd</span><span class="rb-pts">3</span></li>
+            <li><span class="rb-rule">Pick a team 3rd &amp; they finish 3rd</span><span class="rb-pts">2</span></li>
+            <li><span class="rb-rule">Pick a team 4th &amp; they finish 4th</span><span class="rb-pts">2</span></li>
+            <li><span class="rb-rule">Picked to advance &amp; they do — wrong slot</span><span class="rb-pts">1</span></li>
+            <li><span class="rb-rule">Picked to go out &amp; they do — wrong slot</span><span class="rb-pts">1</span></li>
+          </ul>
+        </div>
+
+        <div class="rb-card rb-thirds">
+          <div class="rb-card-head"><span class="rb-no">02</span><span class="rb-name">Top-8 Third Place</span></div>
+          <p class="rb-lede">You rank which 8 of the 12 third-place teams advance. It's genuinely hard, so it pays well.</p>
+          <ul class="rb-rules">
+            <li><span class="rb-rule">Each third-place team you ranked top-8 that advances</span><span class="rb-pts">4</span></li>
+            <li><span class="rb-rule">A team that finishes 3rd but misses the cut</span><span class="rb-pts">2</span></li>
+            <li><span class="rb-rule">All 8 correct — perfect-card bonus</span><span class="rb-pts">+5</span></li>
+          </ul>
+          <p class="rb-foot">A wildcard layer most pick'ems don't even include.</p>
+        </div>
+
+        <div class="rb-card rb-bracket">
+          <div class="rb-card-head"><span class="rb-no">03</span><span class="rb-name">Knockout Bracket</span></div>
+          <p class="rb-lede">Points double each round — later picks are rarer and harder, so the bracket dominates late.</p>
+          <ul class="rb-rules">
+            <li><span class="rb-rule">Round of 32 — correct winner</span><span class="rb-pts">2</span></li>
+            <li><span class="rb-rule">Round of 16 — correct winner</span><span class="rb-pts">4</span></li>
+            <li><span class="rb-rule">Quarter-final — correct winner</span><span class="rb-pts">8</span></li>
+            <li><span class="rb-rule">Semi-final — correct winner</span><span class="rb-pts">16</span></li>
+            <li><span class="rb-rule">Final — correct winner</span><span class="rb-pts">32</span></li>
+            <li><span class="rb-rule">Champion correct — stacks on the Final</span><span class="rb-pts">+32</span></li>
+          </ul>
+          <p class="rb-foot">Calling the champion from the start is worth <b>94</b> across their whole run — the single biggest reward in the contest.</p>
+        </div>
+
+      </div>
+
+      <div class="rb-stakes">
+        <span class="rb-stakes-lab">Points At Stake</span>
+        <div class="rb-stakes-row">
+          <div class="rb-stake"><span class="rb-stake-n">~168</span><span class="rb-stake-l">Group Stage</span></div>
+          <div class="rb-stake"><span class="rb-stake-n">~37</span><span class="rb-stake-l">Third Place</span></div>
+          <div class="rb-stake"><span class="rb-stake-n">94<span class="rb-stake-sub">/team</span></span><span class="rb-stake-l">Bracket Run</span></div>
+        </div>
+        <p class="rb-stakes-note">Group stage gives early separation; the bracket keeps it exciting to the final whistle. Only decided results are scored — your tally grows match by match.</p>
+      </div>
+    </div>
+
     <div class="btnrow">
       <button class="btn ghost" onclick="go('bracket')">← Edit Bracket</button>
       <button class="btn" onclick="go('share')">Share Your Card →</button>
