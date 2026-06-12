@@ -213,6 +213,68 @@ section.active{display:block}
 .recap .rc .l{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;opacity:.7}
 .recap .rc .v{font-family:'Anton',sans-serif;font-size:18px;margin-top:3px;display:flex;align-items:center;gap:6px}
 
+/* ====== LIVE SCORECARD ====== */
+.scorecard{
+  position:relative;background:var(--paper-2);color:var(--ink);
+  border:4px solid var(--ink);box-shadow:var(--shadow);max-width:760px;
+  padding:26px 30px 24px;margin-bottom:30px;overflow:hidden;
+  background-image:
+    radial-gradient(rgba(34,26,18,.05) 1px, transparent 1.4px);
+  background-size:13px 13px;
+}
+/* perforated top edge, like a torn almanac ticket */
+.scorecard .sc-perf{
+  position:absolute;top:-9px;left:0;right:0;height:14px;
+  background:radial-gradient(circle at 9px 0, transparent 0 6px, var(--ink) 6px 7px, transparent 7px) 0 0/18px 14px repeat-x;
+  opacity:.5;pointer-events:none;
+}
+.sc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-bottom:3px solid var(--ink);padding-bottom:12px;flex-wrap:wrap}
+.sc-stamp{
+  font-family:'Anton',sans-serif;font-size:clamp(18px,3vw,26px);letter-spacing:.04em;
+  color:var(--brick);border:3px solid var(--brick);padding:4px 12px;
+  transform:rotate(-2.4deg);box-shadow:2px 2px 0 rgba(156,44,20,.25);
+  text-transform:uppercase;background:rgba(198,61,32,.06);
+}
+.sc-edition{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.22em;opacity:.62;text-align:right}
+
+/* hero total — oversized stamped numeral */
+.sc-total{display:flex;align-items:center;gap:18px;padding:20px 0 18px;border-bottom:2px dashed var(--cream-line)}
+.sc-total-num{
+  font-family:'Anton',sans-serif;font-size:clamp(72px,17vw,128px);line-height:.78;color:var(--ink);
+  -webkit-text-stroke:2px var(--ink);text-shadow:5px 5px 0 var(--ochre);
+  letter-spacing:-.01em;
+}
+.sc-total-lab{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,4vw,34px);line-height:.9;
+  letter-spacing:.04em;color:var(--brick-deep);
+}
+
+/* ledger rows with dotted leaders */
+.sc-ledger{padding:16px 0 4px;display:flex;flex-direction:column;gap:13px}
+.sc-row{display:flex;align-items:baseline;gap:10px}
+.sc-row-lab{flex:none;display:flex;flex-direction:column;line-height:1}
+.sc-row-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(19px,3vw,24px);letter-spacing:.04em}
+.sc-row-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.12em;opacity:.55;margin-top:3px}
+.sc-row-dots{flex:1;align-self:stretch;border-bottom:2px dotted rgba(34,26,18,.45);transform:translateY(-5px)}
+.sc-row-val{
+  flex:none;font-family:'Anton',sans-serif;font-size:clamp(26px,4.4vw,38px);line-height:1;
+  min-width:54px;text-align:right;
+}
+.sc-group  .sc-row-val{color:var(--brick)}
+.sc-thirds .sc-row-val{color:var(--ochre);-webkit-text-stroke:1px var(--ink)}
+.sc-bracket .sc-row-val{color:var(--teal-deep)}
+
+.sc-status{
+  margin-top:16px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.05em;
+  background:var(--ink);color:var(--paper);padding:8px 12px;display:inline-block;
+}
+
+/* On the dark Share card, the score panel stacks above the link box;
+   give it a touch of separation from the share card below. */
+#scorePanel .scorecard{margin-bottom:0;margin-top:0}
+#scorePanel{margin-bottom:24px}
+
 /* view-mode banner */
 .viewbanner{background:var(--teal);color:#fff;border:3px solid var(--ink);box-shadow:var(--shadow-sm);
   padding:14px 18px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
@@ -385,12 +447,26 @@ footer{border-top:3px solid var(--ink);padding:26px 0;text-align:center;font-fam
   </section>
 
   <!-- SHARE -->
+  <section id="score">
+    <span class="kicker">Stage 04 — The Tally</span>
+    <div class="sec-head">
+      <h2>Live Scorecard</h2>
+      <div class="right">Your picks are scored against real results as the tournament unfolds. Points update automatically the moment a group locks or a knockout is decided.</div>
+    </div>
+    <div id="scorePanelMain"></div>
+    <div class="btnrow">
+      <button class="btn ghost" onclick="go('bracket')">← Edit Bracket</button>
+      <button class="btn" onclick="go('share')">Share Your Card →</button>
+    </div>
+  </section>
+
   <section id="share">
-    <span class="kicker">Stage 04 — Lock It In</span>
+    <span class="kicker">Stage 05 — Lock It In</span>
     <div class="sec-head">
       <h2>Share Your Picks</h2>
       <div class="right">Your entire bracket is baked into this link. Save it, send it, reopen it anytime — nothing is stored on a server.</div>
     </div>
+    <div id="scorePanel"></div>
     <div class="share-card">
       <h2>Your Shareable Link</h2>
       <div class="linkbox">
@@ -507,6 +583,7 @@ const STEPS=[
   {id:"groups",label:"Groups"},
   {id:"thirds",label:"Thirds"},
   {id:"bracket",label:"Bracket"},
+  {id:"score",label:"Score"},
   {id:"share",label:"Share"}
 ];
 
@@ -606,6 +683,206 @@ function allGroupsSet(){ return true; }
 function knockoutPicked(){ return Object.keys(picks.winners).length; }
 function knockoutTotal(){ return 31; } // 16+8+4+2+1
 function champion(){ const M=buildBracket(); return advancerOf(103,M); }
+
+/* ============================================================
+   SCORING  —  picks vs. real results (results.json)
+   ------------------------------------------------------------
+   results.json is the live feed of FINISHED matches. We derive
+   the actual outcomes that have been DECIDED so far and award
+   points only for those — the card scores itself as the
+   tournament unfolds. Nothing is awarded for undecided games.
+
+   Point schedule:
+     GROUP (per team, only once that group's 6 games are final)
+       exact 1st .................. 4    exact 2nd ........... 3
+       exact 3rd .................. 2    exact 4th ........... 2
+       right side (advance/out),
+         wrong slot ............... 1
+     THIRDS  (once the 8 advancing thirds are known)
+       team you ranked top-8 that really advanced ... 4 each
+       team you ranked top-8 that finished 3rd but
+         missed the cut ............................. 2 each
+       all 8 exactly right ............ +5 bonus
+     BRACKET (per correctly-picked winner of a decided match)
+       R32 2 · R16 4 · QF 8 · SF 16 · Final 32 · Champion 32
+       (champion stacks on the Final pick)
+   ============================================================ */
+
+/* Loaded once at boot. {} until results.json resolves. Maps team
+   name -> per-game records, plus derived actual standings. */
+let RESULTS = null;
+
+/* Build the lookup the scorer needs from the raw results.json games.
+   We only trust games with finished === "TRUE". */
+function ingestResults(raw){
+  const games = (raw && raw.games) ? raw.games.filter(g=>String(g.finished).trim().toUpperCase()==="TRUE") : [];
+  const groupGames = {};    // groupLetter -> [{h,a,hs,as}]
+  GROUP_LETTERS.forEach(g=>groupGames[g]=[]);
+
+  games.forEach(g=>{
+    if(g.type==="group" && groupGames[g.group]){
+      groupGames[g.group].push({
+        h:g.home_team_name_en, a:g.away_team_name_en,
+        hs:parseInt(g.home_score,10), as:parseInt(g.away_score,10)
+      });
+    }
+  });
+
+  return {
+    groupStandings: computeGroupStandings(groupGames), // {A:[t,t,t,t]|null}
+    raw:games                                          // all finished games (group + knockout)
+  };
+}
+
+/* Standard FIFA ordering: pts, then GD, then GF. A group's standings
+   are only returned once all 6 of its games are final (otherwise null,
+   so we never score a half-played group). */
+function computeGroupStandings(groupGames){
+  const out={};
+  GROUP_LETTERS.forEach(g=>{
+    const gs=groupGames[g];
+    if(gs.length<6){ out[g]=null; return; } // group not complete
+    const tab={};
+    GROUPS[g].forEach(t=>tab[t]={t,pts:0,gd:0,gf:0});
+    gs.forEach(({h,a,hs,as})=>{
+      if(!tab[h]||!tab[a]) return;
+      tab[h].gf+=hs; tab[a].gf+=as;
+      tab[h].gd+=(hs-as); tab[a].gd+=(as-hs);
+      if(hs>as) tab[h].pts+=3;
+      else if(as>hs) tab[a].pts+=3;
+      else { tab[h].pts+=1; tab[a].pts+=1; }
+    });
+    out[g]=Object.values(tab).sort((x,y)=>
+      y.pts-x.pts || y.gd-x.gd || y.gf-x.gf
+    ).map(r=>r.t);
+  });
+  return out;
+}
+
+/* The 8 third-place teams that actually advanced, derived from the
+   real R32 matchups in results.json (each knockout game lists the
+   teams that were placed into it). Returns a Set of team names, or
+   null if fewer than 8 distinct R32 participants are known yet.
+   A simpler, robust signal: a third-placed team advanced iff it
+   appears in any actual knockout game. */
+function actualAdvancingThirds(R){
+  const completeGroups = GROUP_LETTERS.filter(g=>R.groupStandings[g]);
+  if(completeGroups.length < 12) return null; // need all groups final
+  const thirdTeams = {}; // team -> group, for every group's actual 3rd
+  completeGroups.forEach(g=>{ thirdTeams[R.groupStandings[g][2]] = g; });
+  // A 3rd-placed team advanced iff it was placed into a real knockout game.
+  // Capture BOTH participants of every knockout match from the raw feed.
+  const inKO = new Set();
+  R.raw.forEach(g=>{
+    if(g.type && g.type!=="group"){ inKO.add(g.home_team_name_en); inKO.add(g.away_team_name_en); }
+  });
+  const advanced = new Set();
+  Object.keys(thirdTeams).forEach(team=>{ if(inKO.has(team)) advanced.add(team); });
+  // Only trust the result once 8 thirds are actually placed in the bracket
+  return advanced.size===8 ? advanced : null;
+}
+
+/* Stage -> points + display label, keyed by the app's match numbers. */
+function koStageOf(no){
+  if(no>=73 && no<=88) return {pts:2,  label:"R32"};
+  if(no>=89 && no<=96) return {pts:4,  label:"R16"};
+  if(no>=97 && no<=100)return {pts:8,  label:"QF"};
+  if(no===101||no===102)return {pts:16, label:"SF"};
+  if(no===103)         return {pts:32, label:"Final"};
+  return {pts:0,label:""};
+}
+
+/* Map an app match number to the real result's winner (by team name),
+   or null if that game isn't decided yet in results.json.
+   The app numbers knockouts 73–103; results.json uses public ids and
+   stage codes. We match on the two teams the app's bracket placed into
+   the match, so numbering schemes don't need to line up. */
+function actualWinnerForMatch(no, M, R){
+  const m=M[no]; if(!m||!m.top||!m.bottom) return null;
+  const want=new Set([m.top, m.bottom]);
+  // A results game decides this match iff its two participants are exactly
+  // the pair the user's bracket placed here — so the app's 73–103 numbering
+  // never has to line up with the feed's public match ids.
+  for(const g of R.raw){
+    if(!g.type || g.type==="group") continue;
+    const h=g.home_team_name_en, a=g.away_team_name_en;
+    if(want.has(h) && want.has(a) && h!==a){
+      const hs=parseInt(g.home_score,10), as=parseInt(g.away_score,10);
+      if(!Number.isFinite(hs)||!Number.isFinite(as)) return null;
+      return hs>as ? h : (as>hs ? a : null);
+    }
+  }
+  return null;
+}
+
+/* The headline: compute the full score breakdown from current picks. */
+function computeScore(){
+  const empty={total:0, group:0, thirds:0, bracket:0,
+    decided:{groups:0, thirds:false, ko:0}, ready:false};
+  if(!RESULTS) return empty;
+  const R=RESULTS;
+  let group=0, thirds=0, bracket=0;
+  let decidedGroups=0, decidedKO=0;
+
+  /* ---- Part 1: group order ---- */
+  GROUP_LETTERS.forEach(g=>{
+    const actual=R.groupStandings[g];
+    if(!actual) return;            // group not complete -> not scored
+    decidedGroups++;
+    const mine=picks.groups[g];    // [1st,2nd,3rd,4th] predicted
+    const actualPos={};            // team -> real finishing index 0..3
+    actual.forEach((t,i)=>actualPos[t]=i);
+    mine.forEach((team,predIdx)=>{
+      const realIdx=actualPos[team];
+      if(realIdx===undefined) return;
+      if(predIdx===realIdx){
+        group += predIdx===0?4 : predIdx===1?3 : 2; // 4/3/2/2
+      } else {
+        const predAdvance = predIdx<=1, realAdvance = realIdx<=1;
+        if(predAdvance===realAdvance) group += 1;    // right side, wrong slot
+      }
+    });
+  });
+
+  /* ---- Part 2: third-place picks ---- */
+  const adv=actualAdvancingThirds(R);   // Set of 8 team names, or null
+  let thirdsDecided=false;
+  if(adv){
+    thirdsDecided=true;
+    const myTop8=picks.thirds.slice(0,8).map(g=>thirdOf(g)); // my picked teams
+    // who actually finished 3rd in each group (for the consolation 2pt)
+    const realThirds=new Set(GROUP_LETTERS.map(g=>R.groupStandings[g] && R.groupStandings[g][2]).filter(Boolean));
+    let exact=0;
+    myTop8.forEach(team=>{
+      if(adv.has(team)){ thirds+=4; exact++; }
+      else if(realThirds.has(team)){ thirds+=2; } // got the 3rd-place finish, missed the cut
+    });
+    if(exact===8) thirds+=5; // perfect-8 bonus
+  }
+
+  /* ---- Part 3: bracket ---- */
+  const M=buildBracket();
+  let championRight=false;
+  KO_ORDER.forEach(no=>{
+    const myWinner=advancerOf(no,M);
+    if(!myWinner) return;
+    const realWinner=actualWinnerForMatch(no,M,R);
+    if(!realWinner) return;
+    decidedKO++;
+    if(myWinner===realWinner){
+      bracket+=koStageOf(no).pts;
+      if(no===103) championRight=true;
+    }
+  });
+  if(championRight) bracket+=32; // champion bonus stacks on the Final
+
+  const total=group+thirds+bracket;
+  return {
+    total, group, thirds, bracket,
+    decided:{groups:decidedGroups, thirds:thirdsDecided, ko:decidedKO},
+    ready:true
+  };
+}
 
 /* ============================================================
    PERMUTATION ENCODING  (4! = 24 per group; 12! for thirds)
@@ -732,7 +1009,8 @@ function go(id){
   window.scrollTo({top:0,behavior:"smooth"});
   if(id==="thirds") renderThirds();
   if(id==="bracket") renderBracket();
-  if(id==="share"){ updateHash(); renderRecap(); }
+  if(id==="score") renderScore("scorePanelMain");
+  if(id==="share"){ updateHash(); renderRecap(); renderScore("scorePanel"); }
 }
 function buildStepper(activeId){
   const inner=document.getElementById("stepperInner");
@@ -749,6 +1027,7 @@ function stepDone(id){
   if(id==="groups") return true;
   if(id==="thirds") return true;
   if(id==="bracket") return knockoutPicked()===knockoutTotal();
+  if(id==="score") return !!(RESULTS && computeScore().total>0);
   if(id==="share") return !!champion();
   return false;
 }
@@ -920,6 +1199,62 @@ function renderRecap(){
     return `<div class="rc"><div class="l">${l}</div><div class="v">${fl} ${v||"—"}</div></div>`;
   }).join("");
 }
+/* ============================================================
+   RENDER: LIVE SCORECARD
+   A stamped almanac scoreboard. Renders into whatever container
+   id is passed (the Share section and the dedicated Score step
+   each get their own copy).
+   ============================================================ */
+function renderScore(containerId){
+  const host=document.getElementById(containerId);
+  if(!host) return;
+  const s=computeScore();
+
+  // status line: how much of the tournament has actually been decided
+  let status;
+  if(RESULTS_STATUS==="loading"){
+    status="Loading results feed…";
+  } else if(!RESULTS){
+    status="Results feed unavailable — open over http(s) (e.g. GitHub Pages or a local server) to score live.";
+  } else if(!s.ready || (s.decided.groups===0 && s.decided.ko===0 && !s.decided.thirds)){
+    status="No results recorded yet — your tally begins the moment the first group locks.";
+  } else {
+    const bits=[];
+    bits.push(`${s.decided.groups}/12 groups final`);
+    if(s.decided.thirds) bits.push("thirds set");
+    bits.push(`${s.decided.ko}/31 knockouts decided`);
+    status="Scored so far · "+bits.join(" · ");
+  }
+
+  const phases=[
+    {k:"group",  label:"Group Stage",  sub:"Order · 168 max", val:s.group},
+    {k:"thirds", label:"Third-Place",  sub:"Wildcards · 37 max", val:s.thirds},
+    {k:"bracket",label:"Knockout Bracket", sub:"R32 → Champion", val:s.bracket}
+  ];
+
+  host.innerHTML=`
+    <div class="scorecard">
+      <div class="sc-perf"></div>
+      <div class="sc-head">
+        <span class="sc-stamp">OFFICIAL TALLY</span>
+        <span class="sc-edition">WC '26 · PICK'EM ALMANAC</span>
+      </div>
+      <div class="sc-total">
+        <div class="sc-total-num">${s.total}</div>
+        <div class="sc-total-lab">Total<br>Points</div>
+      </div>
+      <div class="sc-ledger">
+        ${phases.map(p=>`
+          <div class="sc-row sc-${p.k}">
+            <div class="sc-row-lab"><span class="sc-row-name">${p.label}</span><span class="sc-row-sub">${p.sub}</span></div>
+            <div class="sc-row-dots"></div>
+            <div class="sc-row-val">${p.val}</div>
+          </div>`).join("")}
+      </div>
+      <div class="sc-status">${status}</div>
+    </div>`;
+}
+
 function finalLoser(M){
   const champ=advancerOf(103,M); if(!champ) return null;
   const fm=M[103];
@@ -1070,8 +1405,33 @@ function renderAll(){
   renderHero();
   renderGroups();
 }
+/* Tracks how the results feed loaded, so the scorecard can tell
+   "no results yet" apart from "couldn't reach the file".
+   "loading" | "ok" | "error" */
+let RESULTS_STATUS="loading";
+
+/* Load the live results feed (results.json sits next to index.html).
+   Works anywhere served over http(s) — GitHub Pages included; over
+   file:// the fetch is usually blocked by the browser, which we surface
+   as an "unavailable" status rather than a broken page.
+   The cache-busting query param sidesteps the browser AND GitHub Pages'
+   CDN edge cache so a refresh always reflects the latest uploaded file. */
+function loadResults(){
+  fetch("results.json?t="+Date.now(),{cache:"no-store"})
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(raw=>{ RESULTS=ingestResults(raw); RESULTS_STATUS="ok"; })
+    .catch(()=>{ RESULTS=null; RESULTS_STATUS="error"; })
+    .finally(()=>{
+      // refresh whichever scorecard is on screen + the step's done-state
+      if(document.getElementById("score").classList.contains("active")) renderScore("scorePanelMain");
+      if(document.getElementById("share").classList.contains("active")) renderScore("scorePanel");
+      buildStepper(document.querySelector("section.active")?.id||"hero");
+    });
+}
+
 function init(){
   renderAll();
+  loadResults();
   // load from hash?
   const hash=location.hash.slice(1);
   if(hash){
