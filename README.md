@@ -1,4 +1,4 @@
-# UNITED '26 — World Cup 2026 Pick'Em
+# World Cup 2026 Pick'Em
 
 A single-file, no-backend web app for predicting the entire 2026 FIFA World Cup:
 
